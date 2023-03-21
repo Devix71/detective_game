@@ -22,7 +22,7 @@ const ScrollableText: React.FC<ScrollableTextProps> = ({ text }) => {
     <div style={{ overflowY: "scroll", height: "400px", width: "510px" }}>
       <pre style={{ whiteSpace: "pre-wrap" }}>{text}</pre>
       <button 
-        style={{ position: 'absolute', left: "20px", bottom: "140px" }}
+        style={{ position: 'auto', left: "20px", bottom: "auto" }}
         onClick={() => setVisible(false)}
       >
         Hide Case File

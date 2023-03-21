@@ -336,10 +336,10 @@ function App({ domElement }: any) {
         clue_states.rel=state.context.relationship
         clue_states.assault = state.context.assault
         clue_states.texts = state.context.angry_text
-        clue_states.illness = state.context.angry_text
-        clue_states.drunk = state.context.angry_text
-        clue_states.witness = state.context.angry_text
-        clue_states.suspicious = state.context.angry_text
+        clue_states.illness = state.context.ill
+        clue_states.drunk = state.context.bar
+        clue_states.witness = state.context.witness
+        clue_states.suspicious = state.context.suspicious
 
 
         myArray.push(context.ttsAgenda)
@@ -509,7 +509,7 @@ function MyComponent_3({ props }) {
         value={props.join("\n")}
         readOnly={true}
         style={{ overflowY: "scroll", height: "200px", width: "600px", resize: "none",
-         position: 'absolute', right: "700px", bottom: "140px" }}
+         position: 'absolute', right: "auto", bottom: "140px" }}
 
       />
     </div>
