@@ -12,7 +12,7 @@ function say(text: string): Action<SDSContext, SDSEvent> {
 const setEntity = (context: SDSContext) => {
 
   
-  let u = String(context.recResult[0].utterance);
+  let u = String(context.recResult[0].utterance.toLowerCase().replace(/\.$/g, ""));
 
   console.log(u)
 
@@ -76,7 +76,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         initial: "intro",
         entry:[ assign({ fail_clue: (context) => context.fail_clue = 0, 
             success_clue: (context) => context.success_clue = 0,
-            counter: (context) => context.counter =0
+            counter: (context) => context.counter =0,
+            repeat: (context) => context.repeat =0
             
         },
             )],
@@ -341,6 +342,11 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
           type: "SPEAK",
           value: `I don't get what you mean by this`,
         })),
+        actions: assign({
+
+          repeat: (_context) => 1
+        }),
+        
         on: { ENDSPEECH: "info_choice" },
   
   
@@ -352,7 +358,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
           onDone: [
             {
               target: 'repeat_text_error',
-              cond: (context, event) =>  event.data.result.prediction.entities.length === 0,
+              cond: (context, event) =>  event.data.result.prediction.entities.length === 0 && context.repeat != 1,
               actions: assign({
                 fail_clue: (_context, event) => _context.fail_clue+=1,
               }),
@@ -363,6 +369,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
               cond: (context, event) => (context?.angry_text === "Success" || context?.angry_text === "Fail") && event.data.result.prediction.entities?.[0]?.category === "angry_text_messages",
               actions: assign({
                 fail_clue: (_context, event) => _context.fail_clue+=1,
+                repeat: (_context) => 0
               }),
             },
             {
@@ -370,6 +377,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
               cond: (context, event) => (context?.assault === "Success" || context?.assault === "Fail") && event.data.result.prediction.entities?.[0]?.category === "assault_in_the_past",
               actions: assign({
                 fail_clue: (_context, event) => _context.fail_clue+=1,
+                repeat: (_context) => 0
               }),
             },
             {
@@ -377,6 +385,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
               cond: (context, event) => (context?.cctv === "Success" || context?.cctv === "Fail") && event.data.result.prediction.entities?.[0]?.category === "CCTV",
               actions: assign({
                 fail_clue: (_context, event) => _context.fail_clue+=1,
+                repeat: (_context) => 0
 
               }),
           },
@@ -385,6 +394,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
             cond: (context, event) => (context?.relationship === "Success" || context?.relationship === "Fail") && event.data.result.prediction.entities?.[0]?.category === "contentious_relationship",
             actions: assign({
               fail_clue: (_context, event) => _context.fail_clue+=1,
+              repeat: (_context) => 0
 
             }),
         },
@@ -393,6 +403,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
           cond: (context, event) => (context?.cord === "Success" || context?.cord === "Fail") && event.data.result.prediction.entities?.[0]?.category === "cord_crime_scene",
           actions: assign({
             fail_clue: (_context, event) => _context.fail_clue+=1,
+            repeat: (_context) => 0
 
           }),
       },
@@ -401,6 +412,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         cond: (context, event) => (context?.ill === "Success" || context?.ill === "Fail") && event.data.result.prediction.entities?.[0]?.category === "feeling_ill",
         actions: assign({
           fail_clue: (_context, event) => _context.fail_clue+=1,
+          repeat: (_context) => 0
 
         }),
     },
@@ -409,6 +421,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       cond: (context, event) => (context?.witness === "Success" || context?.witness === "Fail") && event.data.result.prediction.entities?.[0]?.category === "no_witnesses",
       actions: assign({
         fail_clue: (_context, event) => _context.fail_clue+=1,
+        repeat: (_context) => 0
 
       }),
   },
@@ -417,6 +430,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       cond: (context, event) => (context?.suspicious === "Success" || context?.suspicious === "Fail") && event.data.result.prediction.entities?.[0]?.category === "suspicious_looking_individual",
       actions: assign({
         fail_clue: (_context, event) => _context.fail_clue+=1,
+        repeat: (_context) => 0
 
       }),
   },
@@ -425,6 +439,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
     cond: (context, event) => (context?.bar === "Success" || context?.bar === "Fail") && event.data.result.prediction.entities?.[0]?.category === "spotted_at_bar" ,
     actions: assign({
       fail_clue: (_context, event) => _context.fail_clue+=1,
+      repeat: (_context) => 0
 
     }),
 },
@@ -435,7 +450,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
               cond: (context, event) => event.data.result.prediction.topIntent === "accuse" && event.data.result.prediction.entities?.[0]?.category === "angry_text_messages",
               actions: assign({
                 success_clue: (_context, event) => _context.success_clue+=1,
-                angry_text: (_context, event) => "Success"
+                angry_text: (_context, event) => "Success",
+                repeat: (_context) => 0
               }),
             },
             {
@@ -445,7 +461,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
               },
               actions: assign({
                 success_clue: (_context, event) => _context.success_clue+=1,
-                assault: (_context, event) => "Success"
+                assault: (_context, event) => "Success",
+                repeat: (_context) => 0
               }),
             },
             {
@@ -453,7 +470,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
               cond: (context, event) => event.data.result.prediction.topIntent === "bluff" && event.data.result.prediction.entities?.[0]?.category === "CCTV",
               actions: assign({
                 success_clue: (_context, event) => _context.success_clue+=1,
-                cctv: (_context, event) => "Success"
+                cctv: (_context, event) => "Success",
+                repeat: (_context) => 0
               }),
             },
             {
@@ -461,7 +479,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
               cond: (context, event) => event.data.result.prediction.topIntent === "accuse" && event.data.result.prediction.entities?.[0]?.category === "contentious_relationship",
               actions: assign({
                 success_clue: (_context, event) => _context.success_clue+=1,
-                relationship: (_context, event) => "Success"
+                relationship: (_context, event) => "Success",
+                repeat: (_context) => 0
               }),
             },
             {
@@ -469,7 +488,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
               cond: (context, event) => event.data.result.prediction.topIntent === "accuse" && event.data.result.prediction.entities?.[0]?.category === "cord_crime_scene",
               actions: assign({
                 success_clue: (_context, event) => _context.success_clue+=1,
-                cord: (context, event) => "Success"
+                cord: (context, event) => "Success",
+                repeat: (_context) => 0
               }),
             },
             {
@@ -477,7 +497,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
               cond: (context, event) => event.data.result.prediction.topIntent === "accuse" && event.data.result.prediction.entities?.[0]?.category === "feeling_ill",
               actions: assign({
                 success_clue: (_context, event) => _context.success_clue+=1,
-                ill: (_context, event) => "Success"
+                ill: (_context, event) => "Success",
+                repeat: (_context) => 0
               }),
             },
             {
@@ -485,7 +506,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
               cond: (context, event) => event.data.result.prediction.topIntent === "placate" && event.data.result.prediction.entities?.[0]?.category === "no_witnesses",
               actions: assign({
                 success_clue: (_context, event) => _context.success_clue+=1,
-                witness: (_context, event) => "Success"
+                witness: (_context, event) => "Success",
+                repeat: (_context) => 0
               }),
             },
             {
@@ -493,7 +515,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
               cond: (context, event) => event.data.result.prediction.topIntent === "bluff" && event.data.result.prediction.entities?.[0]?.category === "spotted_at_bar",
               actions: assign({
                 success_clue: (_context, event) => _context.success_clue+=1,
-                bar: (_context, event) => "Success"
+                bar: (_context, event) => "Success",
+                repeat: (_context) => 0
               }),
             },
             {
@@ -501,7 +524,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
               cond: (context, event) => event.data.result.prediction.topIntent === "bluff" && event.data.result.prediction.entities?.[0]?.category === "suspicious_looking_individual",
               actions: assign({
                 success_clue: (_context, event) => _context.success_clue+=1,
-                suspicious: (_context, event) => "Success"
+                suspicious: (_context, event) => "Success",
+                repeat: (_context) => 0
               }),
             },
             {
@@ -512,7 +536,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
               },
               actions: assign({
                 fail_clue: (_context, event) => _context.fail_clue+=1,
-                angry_text: (_context, event) => "Fail"
+                angry_text: (_context, event) => "Fail",
+                repeat: (_context) => 0
               }),
             },
             {
@@ -523,7 +548,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
               },
               actions: assign({
                 fail_clue: (_context, event) => _context.fail_clue+=1,
-                assault: (_context, event) => "Fail"
+                assault: (_context, event) => "Fail",
+                repeat: (_context) => 0
               }),
                        },          
 
@@ -532,7 +558,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
                 cond: (context, event) => event.data.result.prediction.topIntent != "bluff" && event.data.result.prediction.entities?.[0]?.category === "CCTV", 
                 actions: assign({
                   fail_clue: (_context, event) => _context.fail_clue+=1,
-                  cctv: (_context, event) => "Fail"
+                  cctv: (_context, event) => "Fail",
+                  repeat: (_context) => 0
                 }),
             },
 
@@ -542,7 +569,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
                 cond: (context, event) => event.data.result.prediction.topIntent != "accuse" && event.data.result.prediction.entities?.[0]?.category ==="contentious_relationship",
                 actions: assign({
                   fail_clue: (_context, event) => _context.fail_clue+=1,
-                  relationship: (_context, event) => "Fail"
+                  relationship: (_context, event) => "Fail",
+                  repeat: (_context) => 0
                 }),
             },
 
@@ -552,7 +580,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
                 cond: (context, event) => event.data.result.prediction.topIntent != "accuse" && event.data.result.prediction.entities?.[0]?.category === "cord_crime_scene",
                 actions: assign({
                   fail_clue: (_context, event) => _context.fail_clue+=1,
-                  cord: (_context, event) => "Fail"
+                  cord: (_context, event) => "Fail",
+                  repeat: (_context) => 0
                 }),
             },
 
@@ -562,7 +591,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
                 cond: (context, event) => event.data.result.prediction.topIntent != "placate" && event.data.result.prediction.entities?.[0]?.category === "feeling_ill",
                 actions: assign({
                   fail_clue: (_context, event) => _context.fail_clue+=1,
-                  ill: (_context, event) => "Fail"
+                  ill: (_context, event) => "Fail",
+                  repeat: (_context) => 0
                 }),
             },
 
@@ -572,7 +602,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
                 cond: (context, event) => event.data.result.prediction.topIntent != "placate" && event.data.result.prediction.entities?.[0]?.category === "no_witnesses",
                 actions: assign({
                   fail_clue: (_context, event) => _context.fail_clue+=1,
-                  witness: (_context, event) => "Fail"
+                  witness: (_context, event) => "Fail",
+                  repeat: (_context) => 0
                 }),
             },
 
@@ -582,7 +613,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
                 cond: (context, event) => event.data.result.prediction.topIntent != "bluff" && event.data.result.prediction.entities?.[0]?.category === "spotted_at_bar",
                 actions: assign({
                   fail_clue: (_context, event) => _context.fail_clue+=1,
-                  bar: (_context, event) => "Fail"
+                  bar: (_context, event) => "Fail",
+                  repeat: (_context) => 0
                 }),
             },
 
@@ -592,7 +624,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
                 cond: (context, event) => event.data.result.prediction.topIntent != "bluff" && event.data.result.prediction.entities?.[0]?.category === "suspicious_looking_individual",
                 actions: assign({
                   fail_clue: (_context, event) => _context.fail_clue+=1,
-                  suspicious: (_context, event) => "Fail"
+                  suspicious: (_context, event) => "Fail",
+                  repeat: (_context) => 0
                 }),
             },
 

@@ -35,6 +35,7 @@ interface ChatInput {
 }
 
 interface SDSContext {
+  repeat: number;
 
 
   menu: any;
