@@ -20,6 +20,17 @@ const setEntity = (context: SDSContext) => {
   
 };
 
+
+const set_no_entity = ( event: Array) => {
+
+  
+  
+  let x = {category: 'cord_crime_scene', text: 'rope', offset: 31, length: 4, confidenceScore: 1}
+  event.data.result.prediction.entities.push(x)
+  return event;
+  
+};
+
 //This function sends a request Azure's CLU API with the provided text and returns the JSON response
 const getIntents = (uttering: string) =>
   fetch(
@@ -168,7 +179,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
           menu_choice: {
             entry: send((context) => ({
               type: "SPEAK",
-              value: `So... ${context?.username}, what would you like to know from me? And please, hurry it up.`,
+              value: `So... ${context?.username}, what would you like to know from me?`,
             })),
             on: { ENDSPEECH: "ask" },
           },
@@ -332,25 +343,74 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
           was pretty influential and ruthless, but she wouldn't listen. I know who the hooded man was, he was her handler, I guess he deemed her
           role useless after they got what they wanted... and her murder ? It was just them tying their loose ends...`,
         })),
-        on: { ENDSPEECH: "idle" },
-  
-  
         
+        on: { ENDSPEECH: "idle" },
       },
-      repeat_text_error: {
-        entry: send((context) => ({
+        unrecog_menu: {
+          initial: "menu_choice",
+          on: {
+            RECOGNISED: [
+              {
+                target: "info_choice",
+                cond: (context) => context.recResult[0].utterance.toLowerCase().replace(/\.$/g, "") != null,
+                actions: assign({
+                  clue: (context) => setEntity(context),
+                }),
+              },
+     
+              {
+                target: ".nomatch",
+              },
+            ],
+            TIMEOUT: [
+              {
+                target: ".timer",
+                cond: (context) => context.counter < 2,
+  
+              },
+              {
+                target: "init",
+                cond: (context) => context.counter >= 2,
+              },
+            ],
+          },
+          states: {
+            menu_choice: {
+              entry: say(`Now tell me, what do you want to know`),
+              on: { ENDSPEECH: "ask" },
+            },
+            ask: {
+              entry: send("LISTEN"),
+            },
+            nomatch: {
+              entry: say(
+                "Sorry, I don't know what it is. Tell me something I know."
+              ),
+              on: { ENDSPEECH: "ask" },
+            },
+            timer: {
+              entry:[ say(
+                "Stop wasting my time, are you going to question me or not?"
+              ),
+              assign({ counter: (context) => context.counter+=1 }), // increment counter
+              ],
+  
+              on: { ENDSPEECH: "ask" },
+            },
+          },
+        },
+        
+
+        repeat_text_error: {
+        entry: [send((context) => ({
           type: "SPEAK",
           value: `I don't get what you mean by this`,
         })),
-        actions: assign({
 
-          repeat: (_context) => 1
-        }),
+      ],
+
         
-        on: { ENDSPEECH: "info_choice" },
-  
-  
-        
+        on: { ENDSPEECH: "menu" },
       },
       info_choice: {
         invoke: {
@@ -358,7 +418,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
           onDone: [
             {
               target: 'repeat_text_error',
-              cond: (context, event) =>  event.data.result.prediction.entities.length === 0 && context.repeat != 1,
+              cond: (context, event) =>  event.data.result.prediction.entities.length === 0,
               actions: assign({
                 fail_clue: (_context, event) => _context.fail_clue+=1,
               }),

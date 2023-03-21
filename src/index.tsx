@@ -96,7 +96,7 @@ const machine = createMachine(
                   const voices = context.tts.getVoices();
                   //"Microsoft Server Speech Text to Speech Voice (en-AU, WilliamNeural)" nr 77
                   const voiceRe = RegExp(context.parameters.ttsVoice, "u");
-                  console.log(voices)
+                  //console.log(voices)
                   //const voice = voices.find((v: any) => voiceRe.test(v.name))!;
                   const voice = context.tts.getVoices()[77]
                   if (voice) {
