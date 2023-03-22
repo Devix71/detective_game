@@ -12,7 +12,7 @@ function say(text: string): Action<SDSContext, SDSEvent> {
 const setEntity = (context: SDSContext) => {
 
   
-  let u = String(context.recResult[0].utterance.toLowerCase().replace(/\.$/g, ""));
+  let u = String(context.recResult[0].utterance.replace(/\.$/g, ""));
 
   console.log(u)
 
@@ -21,15 +21,6 @@ const setEntity = (context: SDSContext) => {
 };
 
 
-const set_no_entity = ( event: Array) => {
-
-  
-  
-  let x = {category: 'cord_crime_scene', text: 'rope', offset: 31, length: 4, confidenceScore: 1}
-  event.data.result.prediction.entities.push(x)
-  return event;
-  
-};
 
 //This function sends a request Azure's CLU API with the provided text and returns the JSON response
 const getIntents = (uttering: string) =>
@@ -117,7 +108,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         },
         states: {
           intro: {
-            entry: say("Just so you know, the last so-called detective just quit his job and left, but just out of courtesy, what's your name?"),
+            entry: say("Just so you know, the last so-called detective just quit his job and left, but out of courtesy, what's your name?\n"),
             on: { ENDSPEECH: "ask" },
           },
           ask: {
@@ -125,13 +116,13 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
           },
           nomatch: {
             entry: say(
-              "Sorry, I didn't quite get that, please tell me once more."
+              "Sorry, I didn't quite get that, please tell me once more.\n"
             ),
             on: { ENDSPEECH: "ask" },
           },
           timer: {
             entry:[ say(
-              "I'll ask again, who are you, stop wasting my time or leave!"
+              "I'll ask again, who are you, stop wasting my time or leave!\n"
             ),
             assign({ counter: (context) => context.counter+=1 }), // increment counter
             ],
@@ -143,7 +134,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       intro_info: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `Alright, so ${context.username} it is, let's get this over with then.`,
+          value: `Alright, ${context.username} it is, let's get this over with then.\n`,
         })),
         on: { ENDSPEECH: "menu" },
       },
@@ -179,7 +170,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
           menu_choice: {
             entry: send((context) => ({
               type: "SPEAK",
-              value: `So... ${context?.username}, what would you like to know from me?`,
+              value: `So detective, what would you like to know from me?\n`,
             })),
             on: { ENDSPEECH: "ask" },
           },
@@ -188,13 +179,13 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
           },
           nomatch: {
             entry: say(
-              "Sorry, I don't know what it is. Tell me something I know."
+              "Sorry, I don't know what it is. Tell me something I know.\n"
             ),
             on: { ENDSPEECH: "ask" },
           },
           timer: {
             entry:[ say(
-              "Stop wasting our time, are you going to question me or not?"
+              "Stop wasting our time, are you going to question me or not?\n"
             ),
             assign({ counter: (context) => context.counter+=1 }), // increment counter
             ],
@@ -233,7 +224,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         },
         states: {
           menu_choice: {
-            entry: say(`Look, I don't know what you want from me, please ask your questions and leave me alone!`),
+            entry: say(`Look, I don't know what you want from me, please ask your questions and leave me alone!\n`),
             on: { ENDSPEECH: "ask" },
           },
           ask: {
@@ -241,13 +232,13 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
           },
           nomatch: {
             entry: say(
-              "Sorry, I don't know what it is. Tell me something I know."
+              "Sorry, I don't know what it is. Tell me something I know.\n"
             ),
             on: { ENDSPEECH: "ask" },
           },
           timer: {
             entry:[ say(
-              "Stop wasting my time, are you going to question me or not?"
+              "Stop wasting my time, are you going to question me or not?\n"
             ),
             assign({ counter: (context) => context.counter+=1 }), // increment counter
             ],
@@ -286,7 +277,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         },
         states: {
           menu_choice: {
-            entry: say(`Oh dear... so it has come to this then, ask away...`),
+            entry: say(`Oh dear, so it has come to this then, ask away.\n`),
             on: { ENDSPEECH: "ask" },
           },
           ask: {
@@ -294,13 +285,13 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
           },
           nomatch: {
             entry: say(
-              "Sorry, I don't know what it is. Tell me something I know."
+              "Sorry, I don't know what it is. Tell me something I know.\n"
             ),
             on: { ENDSPEECH: "ask" },
           },
           timer: {
             entry:[ say(
-              "Stop wasting our time, are you going to get to the bottom of this or not!?"
+              "Stop wasting our time, are you going to get to the bottom of this or not!?\n"
             ),
             assign({ counter: (context) => context.counter+=1 }), // increment counter
             ],
@@ -324,10 +315,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       normal_end: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `...So it seems all leads point to me. I guess this is then, then let's not waste any more time, 
-          take this as my admission of guilt and let's end this. Yes I killed Sarah, I hated her because I was jealous, I got so intoxicated
-          the night before just so I could finally kill her and get rid of her from my life. I faked the whole illness and timed everythin just right
-          so I could get away with the perfect murder, or so I thought. Good job detective, you've caught me. `,
+          value: `So it seems all leads point to me. I guess this is then, then let's not waste any more time, take this as my admission of guilt and let's end this. Yes I killed Sarah, I hated her because I was jealous, I got so intoxicated the night before just so I could finally kill her and get rid of her from my life. I faked the whole illness and timed everythin just right so I could get away with the perfect murder, or so I thought. Good job detective, you've caught me. `,
         })),
         on: { ENDSPEECH: "idle" },
   
@@ -337,11 +325,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       secret_end: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `Alright, no use prolonging this agony any further, I'll tell you everything, it wasn't me, I didn't do it,
-          the arguments I kept having with Sarah were about her involvement in corporate espionage. Her other employer was a dangerous man,
-          we had actually worked together for a while before I stopped. I kept trying to convince her to quit as well, telling her that this man
-          was pretty influential and ruthless, but she wouldn't listen. I know who the hooded man was, he was her handler, I guess he deemed her
-          role useless after they got what they wanted... and her murder ? It was just them tying their loose ends...`,
+          value: `Alright, no use prolonging this agony any further, I'll tell you everything, it wasn't me, I didn't do it, the arguments I kept having with Sarah were about her involvement in corporate espionage. Her other employer was a dangerous man, we had actually worked together for a while before I stopped. I kept trying to convince her to quit as well, telling her that this man was pretty influential and ruthless, but she wouldn't listen. I know who the hooded man was, he was her handler, I guess he deemed her role useless after they got what they wanted. And her murder ? It was just them tying their loose ends.`,
         })),
         
         on: { ENDSPEECH: "idle" },
@@ -376,7 +360,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
           },
           states: {
             menu_choice: {
-              entry: say(`Now tell me, what do you want to know`),
+              entry: say(`Now tell me, what do you want to know.\n`),
               on: { ENDSPEECH: "ask" },
             },
             ask: {
@@ -384,13 +368,13 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
             },
             nomatch: {
               entry: say(
-                "Sorry, I don't know what it is. Tell me something I know."
+                "Sorry, I don't know what it is. Tell me something I know.\n"
               ),
               on: { ENDSPEECH: "ask" },
             },
             timer: {
               entry:[ say(
-                "Stop wasting my time, are you going to question me or not?"
+                "Stop wasting my time, are you going to question me or not?\n"
               ),
               assign({ counter: (context) => context.counter+=1 }), // increment counter
               ],
@@ -404,7 +388,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         repeat_text_error: {
         entry: [send((context) => ({
           type: "SPEAK",
-          value: `I don't get what you mean by this`,
+          value: `I don't get what you mean by this\n`,
         })),
 
       ],
@@ -699,7 +683,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       failure_choice: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `You've already asked me that, I've told you all there is to know, end of story!`,
+          value: `You've already asked me that, I've told you all there is to know, end of story!\n`,
         })),
         on: { ENDSPEECH:  "menu" },
       },
@@ -731,9 +715,9 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         entry: send((context) => ({
           type: "SPEAK",
           value: `I don't know about any messages. I understand why somebody would send her such messages though. 
-          She wasn't exactly the most likeable person, but she didn't deserve to be killed. 
-          Who knows in what affairs she ended up entagled, she had this tendency to snoop around other people's business, 
-          I did tell her it would end up bad for her one day.`,
+She wasn't exactly the most likeable person, but she didn't deserve to be killed. 
+Who knows in what affairs did she end up entagled, she had this tendency to snoop around other people's business, 
+I did tell her it would end up badly for her one day.\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -770,8 +754,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       fail_angry_text_messages: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `No, I did not send her those messages, and even if I did, there's quite a large jump to make from
-          just sending some aggresive messages to murdering somebody.`,
+          value: `No, 
+I did not send her those messages, and even if I did, there's quite a large jump to make from just sending some aggresive messages to murdering somebody!\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -799,7 +783,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       repeat_clue_assault: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `You've already asked me that, I've told you all there is to know, end of story!`,
+          value: `You've already asked me that, I've told you all there is to know, end of story!\n`,
         })),
         on: { ENDSPEECH: [            
           {
@@ -823,11 +807,9 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       success_assault: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `Yeah..., they happened a while ago, the first one happened when I was young and one of my friends 
-          kept being harassed so I stepped in to stop it, ...too bad it turned violent and the police got involved. 
-          The second time... I'm ashamed to admit, it happened recently after my divorce, I was out drinking to forget 
-          and then I got into an argument with this guy at the bar...and it turned ugly, but again, nobody suffered any 
-          serious harm.`,
+          value: `Yeah, they happened a while ago, the first one happened when I was young and one of my friends kept being harassed so I stepped in to stop it. Too bad it turned violent and the police got involved.
+The second time, I'm ashamed to admit, it happened recently after my divorce:\n
+I was out drinking to forget and then I got into an argument with this guy at the bar, and it turned ugly, but again, nobody suffered any serious harm.\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -862,9 +844,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       fail_assault: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `What does that have to do with anything. They happened in the past and had been solved according 
-          to existing laws. I wasn't the instigator and they didn't end up in anyone's death. Why don't you stop 
-          looking through my past in search of far-fetched connexions and let me go already!`,
+          value: `What does that have to do with anything. They happened in the past and had been solved according to existing laws. I wasn't the instigator and they didn't end up in anyone's death. Why don't you stop looking through my past in search of far-fetched connexions and let me go already!\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -889,7 +869,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       }, repeat_clue_CCTV: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `You've already asked me that, I've told you all there is to know, end of story!`,
+          value: `You've already asked me that, I've told you all there is to know, end of story!\n`,
         })),
         on: { ENDSPEECH: [            
           {
@@ -914,8 +894,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         entry: send((context) => ({
           type: "SPEAK",
           value: `I understand why that might seem suspicious, but I assure you that I had nothing to do with the murder! 
-          As for my car being spotted in the area, I do a lot of driving for work and my schedule can be unpredictable. 
-          It's possible that my car was in the area, but I can't recall any specific details about that day.`,
+As for my car being spotted in the area, I do a lot of driving for work and my schedule can be unpredictable. 
+It's possible that my car was in the area, but I can't recall any specific details about that day.\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -950,8 +930,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         entry: send((context) => ({
           type: "SPEAK",
           value: `Look I know I look like a prime suspect due to that, but I was just feeling sick, so I left work early. 
-          I was in a rush to get home, maybe I should be the suspect for a speeding ticket but that's all there is to that 
-          I swear!`,
+I was in a rush to get home, maybe I should be the suspect for a speeding ticket but that's all there is to that!
+I swear!\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -977,7 +957,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       },      repeat_clue_relationship: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `You've already asked me that, I've told you all there is to know, end of story!`,
+          value: `You've already asked me that, I've told you all there is to know, end of story!\n`,
         })),
         on: { ENDSPEECH: [            
           {
@@ -1001,9 +981,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       success_relationship: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `That's a ridiculous accusation. Yes, Sarah and I had our disagreements, but that doesn't mean I would ever resort 
-          to murder. I may have disliked her, but I'm not a monster! I had nothing to do with her death, and I find it insulting that 
-          you would even suggest such a thing.`,
+          value: `That's a ridiculous accusation. Yes, Sarah and I had our disagreements, but that doesn't mean I would ever resort to murder. I may have disliked her, but I'm not a monster! I had nothing to do with her death, and I find it insulting that you would even suggest such a thing.\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -1038,8 +1016,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         entry: send((context) => ({
           type: "SPEAK",
           value: `I won't deny it, I didn't like her one bit, something about her just irked me the wrong way. 
-          What with her success and popularity 'round the office. Everyone just loved Sarah, she could do no wrong! 
-          Not our little Sarah. .... Anyways I don't see how that would give me the motive`,
+What with her success and popularity 'round the office. 
+Everyone just loved Sarah, she could do no wrong! Not our little Sarah! Anyways I don't see how that would give me the motive.\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -1065,7 +1043,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       },      repeat_clue_cord: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `You've already asked me that, I've told you all there is to know, end of story!`,
+          value: `You've already asked me that, I've told you all there is to know, end of story!\n`,
         })),
         on: { ENDSPEECH: [            
           {
@@ -1090,8 +1068,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         entry: send((context) => ({
           type: "SPEAK",
           value: `Look, I'll tell you something, I don't have it in me to just strangle somebody in cold blood. 
-          I just can't, even if I had some less than civil encounters in the past, it was always in the heat of the moment 
-          and they didn't last long either. So no, I couldn't have strangled her.`,
+I just can't, even if I had some less than civil encounters in the past, it was always in the heat of the moment and that didn't happen much either. 
+So no, I couldn't have strangled her.\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -1124,9 +1102,9 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       fail_cord: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `I have no idea about any murder weapon. I'm a data analyst, not a criminal. I understand that you need to 
-          investigate all possible leads, but accusing me of something that I didn't do is not going to get us anywhere. 
-          You need to look for evidence that points to the actual perpetrator, not just make baseless accusations.`,
+          value: `I have no idea about any murder weapon. I'm a data analyst, not a criminal.
+I understand that you need to investigate all possible leads, but accusing me of something that I didn't do is not going to get us anywhere. 
+You need to look for evidence that points to the actual perpetrator, not just make baseless accusations!\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -1152,7 +1130,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       },      repeat_clue_ill: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `You've already asked me that, I've told you all there is to know, end of story!`,
+          value: `You've already asked me that, I've told you all there is to know, end of story!\n`,
         })),
         on: { ENDSPEECH: [            
           {
@@ -1177,8 +1155,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         entry: send((context) => ({
           type: "SPEAK",
           value: `Ok ok, hear me out, I was feeling a little bad that day, but not that much. Just that, I hate my job. 
-          You know how it is, you go through the daily grind everyday, you just stop caring after a while and try to find ways 
-          of getting out of it as often as possible. Just my luck that this whole incident happened right when I wanted a shorter day at work... `,
+You know how it is, you go through the daily grind everyday, you just stop caring after a while and try to find ways of getting out of it as often as possible. 
+Just my luck that this whole incident happened right when I wanted a shorter day at work.\n `,
         })),
         on: {
           ENDSPEECH: [
@@ -1212,7 +1190,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         entry: send((context) => ({
           type: "SPEAK",
           value: `That's a baseless accusation. I have never left work early to harm anyone, let alone murder someone. 
-          As a data analyst, my work is important to me and I take my responsibilities seriously.`,
+As a data analyst, my work is important to me and I take my responsibilities seriously.\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -1238,7 +1216,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       },      repeat_clue_witness: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `You've already asked me that, I've told you all there is to know, end of story!`,
+          value: `You've already asked me that, I've told you all there is to know, end of story!\n`,
         })),
         on: { ENDSPEECH: [            
           {
@@ -1262,9 +1240,9 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       success_witness: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `I mean... the lack of witnesses is purely a badly timed coincidence, at the time I left and when I suppose 
-          the murder happened, just about everybody in the business park is either working or having lunch at one of the nearby 
-          restaurants. Everyone around the office knows that the place can look pretty deserted at that time.`,
+          value: `I mean...
+the lack of witnesses is purely a badly timed coincidence, at the time I left and when I suppose the murder happened, just about everybody in the business park is either working or having lunch at one of the nearby restaurants. 
+Everyone around the office knows that the place can look pretty deserted at that time.\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -1298,8 +1276,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         entry: send((context) => ({
           type: "SPEAK",
           value: `I understand your concern, but unfortunately, I just don't have any information that could be useful in this matter. 
-          As far as I know, I wasn't around the scene at the time the murder took place. Moreover, I'm not aware of anyone who could 
-          have witnessed the crime.`,
+As far as I know, I wasn't around the scene at the time the murder took place. Moreover, I'm not aware of anyone who could have witnessed the crime.\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -1325,7 +1302,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       },      repeat_clue_bar: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `You've already asked me that, I've told you all there is to know, end of story!`,
+          value: `You've already asked me that, I've told you all there is to know, end of story!\n`,
         })),
         on: { ENDSPEECH: [            
           {
@@ -1350,9 +1327,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         entry: send((context) => ({
           type: "SPEAK",
           value: `Yeah I was drinking the night before, you got me, it's my way of coping with the stress of my job. 
-          It's not that unusual for me, maybe not healthy, but it certainly shouldn't be suspicious you know ? 
-          And truth to be told, I drank so much that I did feel a bit sick the next day, can't really remember much of what 
-          happened at work either.`,
+It's not that unusual for me, maybe not healthy, but it certainly shouldn't be suspicious you know !? 
+And truth to be told, I drank so much that I did feel a bit sick the next day, can't really remember much of what happened at work either.\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -1387,8 +1363,8 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
         entry: send((context) => ({
           type: "SPEAK",
           value: `That's a ridiculous accusation. I didn't know it was ilegal to drink. What do I in my spare time is my business. 
-          Just because I was drinking doesn't mean I would commit murder. I have no memory of being anywhere near the victim that 
-          night. Are you trying to twist the facts to make me look guilty?`,
+Just because I was drinking doesn't mean I would commit murder! I have no memory of being anywhere near the victim that night. 
+Are you trying to twist the facts to make me look guilty!?\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -1414,7 +1390,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       },      repeat_clue_suspicious: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `You've already asked me that, I've told you all there is to know, end of story!`,
+          value: `You've already asked me that, I've told you all there is to know, end of story!\n`,
         })),
         on: { ENDSPEECH: [            
           {
@@ -1438,8 +1414,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       success_suspicious: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `Yeah, I saw somebody when I was leaving, they seemed *pretty* shady if you ask me, but I wouldn't go as far as 
-          saying that they killed Sarah.`,
+          value: `Yeah, I saw somebody when I was leaving, they seemed pretty shady if you ask me, but I wouldn't go as far as saying that they killed Sarah.\n`,
         })),
         on: {
           ENDSPEECH: [
@@ -1473,8 +1448,7 @@ export const dmMachine: MachineConfig<SDSContext, any, SDSEvent> = {
       fail_suspicious: {
         entry: send((context) => ({
           type: "SPEAK",
-          value: `No, I don't know who that is, didn't see anybody like that in the area, this seems like a waste of time if 
-          you ask me.`,
+          value: `No, I don't know who that is, didn't see anybody like that in the area, this seems like a waste of time if you ask me.\n`,
         })),
         on: {
           ENDSPEECH: [
